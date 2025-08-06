@@ -4,6 +4,10 @@
 This plugin consists of a bare-minimum C binding for ntsc-rs (in the `ntscrs-cbind` directory)
 and an obs plugin that uses it to apply the filter to a video source.
 
+<img width="515" height="682" alt="image" src="https://github.com/user-attachments/assets/360e20bc-5267-41a6-bf38-4a8a2c3b716f" />
+
+([image source](https://www.publicdomainpictures.net/en/view-image.php?image=336403))
+
 ### Warning
 This effect is quite CPU intensive: it's recommended to resize sources to 480p before processing them.
 
