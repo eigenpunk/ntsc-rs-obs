@@ -13,6 +13,29 @@ include(helpers)
 
 add_library(${CMAKE_PROJECT_NAME} MODULE)
 
+set(NTSCRS_DIR "${CMAKE_SOURCE_DIR}/ntscrs-cbind")
+set(RUST_BUILD_MODE "release")
+set(RUST_SO_NAME "libntscrs_cbind.a")
+set(RUST_SO "${NTSCRS_DIR}/target/${RUST_BUILD_MODE}/${RUST_SO_NAME}")
+set(RUST_SO_COMMON "${CMAKE_BINARY_DIR}/${RUST_SO_NAME}")
+
+add_custom_command(
+    OUTPUT ${RUST_SO_COMMON}
+    COMMAND ${CMAKE_COMMAND} -E env cargo build --${RUST_BUILD_MODE}
+             --manifest-path ${NTSCRS_DIR}/Cargo.toml
+    COMMAND ${CMAKE_COMMAND} -E copy ${RUST_SO} ${RUST_SO_COMMON}
+    WORKING_DIRECTORY ${NTSCRS_DIR}
+    COMMENT "Building ntsc-rs and C binding libraries"
+    VERBATIM
+)
+add_custom_target(rust-build ALL DEPENDS ${RUST_SO_COMMON})
+
+add_library(ntscrs STATIC IMPORTED)
+set_target_properties(ntscrs PROPERTIES IMPORTED_LOCATION ${RUST_SO_COMMON})
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ntscrs)
+
+add_dependencies(${CMAKE_PROJECT_NAME} rust-build)
+
 find_package(libobs REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
 
@@ -35,5 +58,9 @@ if(ENABLE_QT)
 endif()
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/plugin-main.c)
+target_include_directories(
+    ${CMAKE_PROJECT_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/ntscrs-cbind)
 
 set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})

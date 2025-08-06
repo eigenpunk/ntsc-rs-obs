@@ -1,12 +1,11 @@
-# OBS Plugin Template
+# ntsc-rs-obs
+[ntsc-rs](https://github.com/valadaptive/ntsc-rs) as an obs video filter plugin.
 
-## Introduction
+This plugin consists of a bare-minimum C binding for ntsc-rs (in the `ntscrs-cbind` directory)
+and an obs plugin that uses it to apply the filter to a video source.
 
-The plugin template is meant to be used as a starting point for OBS Studio plugin development. It includes:
-
-* Boilerplate plugin source code
-* A CMake project file
-* GitHub Actions workflows and repository actions
+### Warning
+This effect is quite CPU intensive: it's recommended to resize sources to 480p before processing them.
 
 ## Supported Build Environments
 
@@ -20,40 +19,39 @@ The plugin template is meant to be used as a starting point for OBS Studio plugi
 | Ubuntu 24.04 | `pkg-config`
 | Ubuntu 24.04 | `build-essential` |
 
-## Quick Start
+## Building
+These instructions are adapted from the [obs-plugintemplate wiki](https://github.com/obsproject/obs-plugintemplate/wiki/Quick-Start-Guide).
+Make sure you have Rust, CMake, and obs-studio/libobs installed for your platform.
 
-An absolute bare-bones [Quick Start Guide](https://github.com/obsproject/obs-plugintemplate/wiki/Quick-Start-Guide) is available in the wiki.
+### Linux
+Run one of the following in the repo's root directory depending on your setup:
+```bash
+cmake --preset linux        # generate build files for ninja
+cmake --preset linux-make   # ditto but for make
+```
 
-## Documentation
+Then build and package with:
+```bash
+cmake --build --preset linux
+cmake --install build_x86_64 --prefix release-linux
+```
 
-All documentation can be found in the [Plugin Template Wiki](https://github.com/obsproject/obs-plugintemplate/wiki).
+### Windows
+Ensure you have the most recent version of Visual Studio 17 2022 installed. Then run the following in the repo's root directory:
+```bash
+cmake --preset windows-x64
+cmake --build --preset windows-x64
+cmake --install build_x64 --prefix release-windows
+```
 
-Suggested reading to get up and running:
-
-* [Getting started](https://github.com/obsproject/obs-plugintemplate/wiki/Getting-Started)
-* [Build system requirements](https://github.com/obsproject/obs-plugintemplate/wiki/Build-System-Requirements)
-* [Build system options](https://github.com/obsproject/obs-plugintemplate/wiki/CMake-Build-System-Options)
+### macOS
+Ensure you have the latest version of Xcode installed lmao, then run the following in the repo's root directory:
+```bash
+cmake --preset macos
+cmake --build --preset macos
+cmake --install build_macos --prefix release-macos
+```
 
 ## GitHub Actions & CI
-
-Default GitHub Actions workflows are available for the following repository actions:
-
-* `push`: Run for commits or tags pushed to `master` or `main` branches.
-* `pr-pull`: Run when a Pull Request has been pushed or synchronized.
-* `dispatch`: Run when triggered by the workflow dispatch in GitHub's user interface.
-* `build-project`: Builds the actual project and is triggered by other workflows.
-* `check-format`: Checks CMake and plugin source code formatting and is triggered by other workflows.
-
-The workflows make use of GitHub repository actions (contained in `.github/actions`) and build scripts (contained in `.github/scripts`) which are not needed for local development, but might need to be adjusted if additional/different steps are required to build the plugin.
-
-### Retrieving build artifacts
-
-Successful builds on GitHub Actions will produce build artifacts that can be downloaded for testing. These artifacts are commonly simple archives and will not contain package installers or installation programs.
-
-### Building a Release
-
-To create a release, an appropriately named tag needs to be pushed to the `main`/`master` branch using semantic versioning (e.g., `12.3.4`, `23.4.5-beta2`). A draft release will be created on the associated repository with generated installer packages or installation programs attached as release artifacts.
-
-## Signing and Notarizing on macOS
-
-Basic concepts of codesigning and notarization on macOS are explained in the correspodning [Wiki article](https://github.com/obsproject/obs-plugintemplate/wiki/Codesigning-On-macOS) which has a specific section for the [GitHub Actions setup](https://github.com/obsproject/obs-plugintemplate/wiki/Codesigning-On-macOS#setting-up-code-signing-for-github-actions).
+This repo has a bunch of CI batteries included from [obs-plugintemplate](https://github.com/obsproject/obs-plugintemplate);
+all of it is documented there.
