@@ -33,13 +33,13 @@
     },
     "platformConfig": {
         "macos": {
-            "bundleId": "com.example.plugintemplate-for-obs"
+            "bundleId": "io.github.eigenpunk.ntsc-rs-obs"
         }
     },
-    "name": "plugintemplate-for-obs",
-    "displayName": "Plugin Template for OBS",
+    "name": "ntsc-rs-obs",
+    "displayName": "ntsc-rs filter plugin for OBS",
     "version": "1.0.0",
-    "author": "Your Name Here",
-    "website": "https://example.com",
-    "email": "me@example.com"
+    "author": "eigenpunk",
+    "website": "",
+    "email": ""
 }

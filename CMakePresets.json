@@ -97,6 +97,19 @@
         "CMAKE_COMPILE_WARNING_AS_ERROR": true,
         "ENABLE_CCACHE": true
       }
+    },
+    {
+      "name": "linux",
+      "inherits": ["ubuntu-ci-x86_64"],
+      "displayName": "Generic linux",
+      "description": "Build for linux"
+    },
+    {
+      "name": "linux-make",
+      "inherits": ["ubuntu-ci-x86_64"],
+      "generator": "Unix Makefiles",
+      "displayName": "Generic linux (make)",
+      "description": "Build for linux"
     }
   ],
   "buildPresets": [
@@ -140,6 +153,13 @@
       "configurePreset": "ubuntu-ci-x86_64",
       "displayName": "Ubuntu x86_64 CI",
       "description": "Ubuntu CI build for x86_64",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "linux",
+      "configurePreset": "linux",
+      "displayName": "Generic linux",
+      "description": "Build for linux",
       "configuration": "RelWithDebInfo"
     }
   ]
