@@ -27,11 +27,11 @@ runs:
         checkGlob: "'*.c' '*.h' '*.cpp' '*.hpp' '*.m' '*.mm'"
         diffFilter: 'ACM'
 
-    - name: Install Dependencies 🛍️
+    - name: Install Dependencies
       if: runner.os == 'Linux' && fromJSON(steps.checks.outputs.hasChangedFiles)
       shell: bash
       run: |
-        : Install Dependencies 🛍️
+        : Install Dependencies
         echo ::group::Install Dependencies
         eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         echo "/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin" >> $GITHUB_PATH
@@ -39,7 +39,7 @@ runs:
         brew install --quiet zsh
         echo ::endgroup::
 
-    - name: Run clang-format 🐉
+    - name: Run clang-format
       if: fromJSON(steps.checks.outputs.hasChangedFiles)
       id: result
       shell: zsh --no-rcs --errexit --pipefail {0}
@@ -47,7 +47,7 @@ runs:
       env:
         CHANGED_FILES: ${{ steps.checks.outputs.changedFiles }}
       run: |
-        : Run clang-format 🐉
+        : Run clang-format
         if (( ${+RUNNER_DEBUG} )) setopt XTRACE
 
         print ::group::Install clang-format-19
