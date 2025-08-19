@@ -184,9 +184,7 @@ impl Default for NtscRsEffectParams {
     }
 }
 
-pub fn ntscrs_effect_from_params(
-    params: NtscRsEffectParams,
-) -> NtscEffect {
+pub fn ntscrs_effect_from_params(params: NtscRsEffectParams) -> NtscEffect {
     let mut effect = NtscEffect::default();
     effect.random_seed = params.random_seed;
     effect.use_field = match params.use_field {
@@ -237,7 +235,7 @@ pub fn ntscrs_effect_from_params(
                 height: params.head_switching.height,
                 offset: params.head_switching.offset,
                 horiz_shift: params.head_switching.horiz_shift,
-                mid_line: if params.enable_head_switching {
+                mid_line: if params.head_switching.enable_mid_line {
                     Some(HeadSwitchingMidLineSettings {
                         position: params.head_switching.mid_line_position,
                         jitter: params.head_switching.mid_line_jitter,
@@ -342,9 +340,7 @@ pub fn ntscrs_effect_from_params(
     effect
 }
 
-pub fn ntscrs_effect_to_params(
-    effect: NtscEffect,
-) -> NtscRsEffectParams {
+pub fn ntscrs_effect_to_params(effect: NtscEffect) -> NtscRsEffectParams {
     let head_switching = effect.head_switching.clone().unwrap_or_default();
     let head_switching_mid_line = head_switching.mid_line.clone().unwrap_or_default();
     let tracking_noise = effect.tracking_noise.clone().unwrap_or_default();
@@ -476,15 +472,13 @@ pub fn ntscrs_effect_to_params(
 }
 
 #[no_mangle]
-pub extern "C" fn ntscrs_default_effect_params(
-    params: *mut NtscRsEffectParams
-) {
+pub extern "C" fn ntscrs_default_effect_params(params: *mut NtscRsEffectParams) {
     unsafe { *params = NtscRsEffectParams::default() };
 }
 
 #[macro_export]
 macro_rules! impl_pix_fmt_fn {
-    ($fn_name: ident, $pix_fmt: ident, $ty: ident) => {
+    ($fn_name: ident, $pix_fmt: ident) => {
         #[no_mangle]
         pub extern "C" fn $fn_name(
             params: NtscRsEffectParams,
@@ -493,41 +487,43 @@ macro_rules! impl_pix_fmt_fn {
             input_frame: *mut u8,
             frame_num: usize,
         ) {
+            let buf_size = dimension_x * dimension_y * $pix_fmt::pixel_bytes();
+            let input_frame = unsafe { std::slice::from_raw_parts_mut(input_frame as *mut <$pix_fmt as PixelFormat>::DataFormat, buf_size) };
             let effect = ntscrs_effect_from_params(params);
             effect.apply_effect_to_buffer::<$pix_fmt>(
                 (dimension_x, dimension_y),
-                unsafe { std::slice::from_raw_parts_mut(input_frame as *mut $ty, dimension_x * dimension_y * $pix_fmt::pixel_bytes()) },
+                input_frame,
                 frame_num,
                 [1.0, 1.0],
-            )
+            );
         }
     };
 }
 
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgbx8, Rgbx8, u8);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xrgb8, Xrgb8, u8);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgrx8, Bgrx8, u8);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xbgr8, Xbgr8, u8);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgbx16, Rgbx16, u16);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xrgb16, Xrgb16, u16);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgrx16, Bgrx16, u16);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xbgr16, Xbgr16, u16);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgbx16s, Rgbx16s, i16);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xrgb16s, Xrgb16s, i16);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgrx16s, Bgrx16s, i16);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xbgr16s, Xbgr16s, i16);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgbx32f, Rgbx32f, f32);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xrgb32f, Xrgb32f, f32);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgrx32f, Bgrx32f, f32);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xbgr32f, Xbgr32f, f32);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgb8, Rgb8, u8);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgr8, Bgr8, u8);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgb16, Rgb16, u16);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgr16, Bgr16, u16);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgb16s, Rgb16s, i16);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgr16s, Bgr16s, i16);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgb32f, Rgb32f, f32);
-impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgr32f, Bgr32f, f32);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgbx8, Rgbx8);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xrgb8, Xrgb8);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgrx8, Bgrx8);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xbgr8, Xbgr8);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgbx16, Rgbx16);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xrgb16, Xrgb16);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgrx16, Bgrx16);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xbgr16, Xbgr16);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgbx16s, Rgbx16s);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xrgb16s, Xrgb16s);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgrx16s, Bgrx16s);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xbgr16s, Xbgr16s);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgbx32f, Rgbx32f);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xrgb32f, Xrgb32f);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgrx32f, Bgrx32f);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_xbgr32f, Xbgr32f);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgb8, Rgb8);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgr8, Bgr8);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgb16, Rgb16);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgr16, Bgr16);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgb16s, Rgb16s);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgr16s, Bgr16s);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_rgb32f, Rgb32f);
+impl_pix_fmt_fn!(ntscrs_apply_effect_to_buffer_bgr32f, Bgr32f);
 
 #[no_mangle]
 pub extern "C" fn ntscrs_apply_effect_to_buffer(
